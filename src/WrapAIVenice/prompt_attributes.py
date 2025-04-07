@@ -16,6 +16,8 @@ import logging
 # 2. Logger Configuration
 logger = logging.getLogger(__name__)
 
+from .wv_core import WEB_SEARCH_MODES
+
 
 @dataclass
 class VeniceParameters:
@@ -26,12 +28,13 @@ class VeniceParameters:
 
     def __post_init__(self):
         """Validate inputs, ensuring they meet expected constraints if provided."""
-        if self.enable_web_search is not None and self.enable_web_search not in {'auto', 'on', 'off'}:
-            raise ValueError("enable_web_search must be 'auto', 'on', or 'off'.")
+        if self.enable_web_search is not None and self.enable_web_search not in WEB_SEARCH_MODES:
+            raise ValueError(f"enable_web_search must be one of {WEB_SEARCH_MODES}, got '{self.enable_web_search}'")
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary, excluding None values to keep output clean."""
         return {k: v for k, v in self.__dict__.items() if v is not None}
+
 
 @dataclass
 class PromptAttributes:

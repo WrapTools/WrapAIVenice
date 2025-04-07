@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 import logging
 
-# 2. Logger Configuration
+# Logger Configuration
 logger = logging.getLogger(__name__)
 
 class MarkdownToText:

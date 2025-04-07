@@ -8,10 +8,13 @@ Includes:
 """
 
 from .utils.tokens_char import count_characters_and_tokens
+from .wv_core import WSChatMemoryDefaults
 
 
 class ConversationMemory:
-    def __init__(self, system_prompt="", max_tokens=8000, token_buffer=512):
+    def __init__(self, system_prompt="",
+                 max_tokens=WSChatMemoryDefaults.MAX_TOKENS,
+                 token_buffer=WSChatMemoryDefaults.TOKEN_BUFFER):
         self.messages = []
         self.max_tokens = max_tokens
         self.token_buffer = token_buffer

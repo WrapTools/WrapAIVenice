@@ -1,6 +1,6 @@
 # token_char.py
-import tiktoken
 
+import tiktoken
 import logging
 
 # Logger Configuration

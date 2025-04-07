@@ -62,8 +62,7 @@ class PromptManager:
 
             logger.info(f"✅ Loaded {len(self.prompts)} prompts from {self.file_path}")
 
-        # except (IOError, json.JSONDecodeError) as err:
-        #     logger.error(f"❌ Error loading {self.file_path}: {err}")
+
         except (IOError, json.JSONDecodeError) as err:
             logger.error(f"❌ Error loading {self.file_path}: {err}")
 

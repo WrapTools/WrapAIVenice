@@ -7,19 +7,21 @@ Includes:
 - `DataclassJSONEncoder`: Serializes dataclass instances to JSON-friendly dicts.
 """
 
-
 import re
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, Callable
 import hashlib
 import copy
+
 import logging
 
 # Logger Configuration
 logger = logging.getLogger(__name__)
 
 from .prompt_attributes import VeniceParameters
+from .handlers import FILE_HANDLERS
+
 
 @dataclass
 class PromptTemplate:
@@ -32,21 +34,9 @@ class PromptTemplate:
 
     def __post_init__(self):
         """Ensure venice_parameters is only set when explicitly provided."""
-        # venice_params = self.default_attributes.get('venice_parameters')
-
-        # venice_params = self.default_attributes.get('venice_parameters', {})
-        # if isinstance(venice_params, dict):
-        #     self.default_attributes['venice_parameters'] = VeniceParameters(**venice_params)
-
         venice_params = copy.deepcopy(self.default_attributes.get('venice_parameters', {}))
         if isinstance(venice_params, dict):
             self.default_attributes['venice_parameters'] = VeniceParameters(**venice_params)
-
-        # if venice_params is not None:
-        #     if isinstance(venice_params, dict):
-        #         self.default_attributes['venice_parameters'] = VeniceParameters(**venice_params)
-        #     elif not isinstance(venice_params, VeniceParameters):
-        #         raise TypeError("venice_parameters must be a dict or VeniceParameters instance")
 
     def get_placeholders(self) -> list:
         """
@@ -91,12 +81,24 @@ class PromptTemplate:
                     file_path = Path(file_path)
 
                 if isinstance(file_path, Path):  # If it's a Path, read file content
-                    if file_path.exists() and file_path.is_file():
-                        with file_path.open("r", encoding="utf-8") as f:
-                            file_content = f.read().strip()
-                        logger.debug(f"📄 Loaded file content for {key}: {file_content[:50]}...")
+                    # if file_path.exists() and file_path.is_file():
+                    #     with file_path.open("r", encoding="utf-8") as f:
+                    #         file_content = f.read().strip()
+                    ext = file_path.suffix.lower()
+                    handler = FILE_HANDLERS.get(ext)
+
+                    if handler:
+                        try:
+                            file_content = handler(file_path)
+                            logger.debug(f"📄 Used handler for {ext}: {file_content[:50]}...")
+                        except Exception as e:
+                            file_content = f"[Error reading file: {file_path.name}]"
+                            logger.error(f"Handler error for {file_path}: {e}")
                     else:
-                        file_content = f"[ERROR: {file_path.name} not found]"
+                        file_content = f"[Unsupported file type: {ext}]"
+                        logger.debug(f"📄 Loaded file content for {key}: {file_content[:50]}...")
+                    # else:
+                    #     file_content = f"[ERROR: {file_path.name} not found]"
                 elif isinstance(values[key], str):  # If already a string, use as-is
                     file_content = values[key]
 
@@ -106,10 +108,6 @@ class PromptTemplate:
                 #     formatted_prompt = re.sub(pattern, file_content, formatted_prompt)
                 if file_content is not None:
                     formatted_prompt = formatted_prompt.replace(f"%% {key} %%", file_content)
-                    # formatted_prompt = re.sub(fr'%%\s*{re.escape(key)}\s*%%', file_content, formatted_prompt)
-
-
-
             else:
                 missing_keys.append(f"%% {key} %%")
 

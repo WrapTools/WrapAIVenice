@@ -8,6 +8,10 @@ Includes:
 
 import json
 from dataclasses import asdict, is_dataclass
+import logging
+
+# Logger Configuration
+logger = logging.getLogger(__name__)
 
 class DataclassJSONEncoder(json.JSONEncoder):
     def default(self, obj):

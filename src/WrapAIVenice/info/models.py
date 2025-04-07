@@ -1,17 +1,16 @@
 # models.py
 
 import requests
-import pprint
 import logging
 
-# 2. Logger Configuration
-logger = logging.getLogger(__name__)
+from ..wv_core import BASE_URL
 
-from ..data.constants import API_KEY
+# Logger Configuration
+logger = logging.getLogger(__name__)
 
 
 class VeniceModels:
-    def __init__(self, api_key, base_url="https://api.venice.ai/api/v1"):
+    def __init__(self, api_key, base_url=BASE_URL):
         self.api_key = api_key
         self.base_url = base_url
         self.headers = {"Authorization": f"Bearer {self.api_key}"}
@@ -48,13 +47,3 @@ class VeniceModels:
             if model.get("id") == model_name:
                 return model.get("model_spec", {}).get("availableContextTokens", "N/A")
         return "Model not found"
-
-
-def main():
-    models = VeniceModels(api_key=API_KEY)
-    models.fetch_models()
-    # print(models.models_data)
-    pprint.pprint(models.models_data)
-
-if __name__ == "__main__":
-    main()
